@@ -1,390 +1,491 @@
-var eightNumsApp = angular.module('eightNumsApp', []);
 
-eightNumsApp.filter('getWidth', function() {
-    return function (data) {
-        return data%3;
-    };
-}).filter('getHeight', function() {
-    return function (data) {
-        return parseInt(data/3);
-    };
-});
+var container, stats;
 
-eightNumsApp.controller('mainPanel', ['$scope', '$timeout', function($scope, $timeout) {
+var camera, controls, scene, renderer;
 
-    $scope.filter = {
-        getWidth: function (data) {
-            return data%3;
-        },
-        getHeight: function (data) {
-            return parseInt(data/3);
-        }
-    };
-    $scope.event = {
-        random: function () {
-            $scope.event.reset();
+var cube, plane;
 
-            var rnd = func.setRandom();
-            console.log("source", rnd);
-            $scope.sourcePosition = func.remap( rnd );
-            $scope.showPosition = func.remap( rnd );
-            $scope.targetPosition = func.remap( func.getTargetArr() );
+var group = [];
 
-            $scope.hasSolution = func.hasSolution();
-            $scope.event.solve();
-        },
-        solve: function () {
-            $scope.result = func.getPath();
-            if ( $scope.result && $scope.result.solve )
-                $scope.showPosition = func.remap( $scope.result.path[0] );
-            $scope.sourceIndex = 0;
-        },
-        next: function () {
-            $scope.sourceIndex ++;
-            if ( $scope.result && $scope.result.solve && $scope.sourceIndex < $scope.result.path.length) {
-                $scope.showPosition = func.remap( $scope.result.path[$scope.sourceIndex] );
+var PI = Math.acos(-1);
 
-            }
-            else {
-                $scope.sourceIndex --;
-                $scope.showMessage = true;
-                $timeout(function(){$scope.animateMessage = true;}, 50);
-                $timeout(function(){$scope.animateMessage = false;},2000);
-                $timeout(function(){$scope.showMessage = false;},2400);
-                return false;
-            }
-            return true;
-        },
-        reset: function () {
-            $scope.animateMessage = false;
-            $timeout(function(){$scope.showMessage = false;}, 400);
-
-            if ( $scope.result && $scope.result.solve )
-                $scope.showPosition = func.remap( $scope.result.path[0] );
-             $scope.sourceIndex = 0;
-        },
-        auto: function () {
-            if ( $scope.async ) return;
-            $scope.async = true;
-            goNext();
-            function goNext() {
-                if ($scope.event.next())
-                    $timeout( function () {
-                        goNext();
-                    }, 150 );
-                else {
-                    $scope.async = false;
-                }
-            }
-        },
-        pathView: function (event, index) {
-            //console.log(event,index);
-            $scope.holdMouseHover = true;
-            $scope.tempIndex = index;
-            $scope.showPosition = func.remap( $scope.result.path[ $scope.tempIndex ] );
-        },
-        pathResume: function () {
-            $scope.holdMouseHover = false;
-            $timeout(function(){
-                if ($scope.holdMouseHover) return;
-                $scope.showPosition = func.remap( $scope.result.path[ $scope.sourceIndex ] );
-            },500);
-        },
-        pathSelect: function (event, index) {
-            $scope.sourceIndex = index;
-            $scope.showPosition = func.remap( $scope.result.path[ $scope.sourceIndex ] );
-            try{$scope.$digest();}catch(e){}
-        },
-        keyControl: function (e) {
-            if( e.which===38 ) {
-                if ( $scope.sourceIndex > 0 )
-                    $scope.event.pathSelect( null, $scope.sourceIndex-1 );
-                e.preventDefault();
-            }
-            else if ( e.which===40 ) {
-                if ( $scope.result && $scope.result.path && $scope.sourceIndex+1 < $scope.result.path.length)
-                    $scope.event.pathSelect( null, $scope.sourceIndex+1 );
-                e.preventDefault();
-            }
-        },
-        calcDir: function (arr, index) {
-            var a = index, b = index + 1;
-            if ( arr.length <= b ) return '=';
-            var Da = findBlank(arr[a]);
-            var Db = findBlank(arr[b]);
-            if ( Da<Db ) {
-                if ( Db-Da === 1 )
-                    return '←';
-                else
-                    return '↑';
-            }
-            else {
-                if ( Da-Db === 1)
-                    return '→';
-                else
-                    return '↓';
-            }
-            function findBlank(arr) {
-                for( var i=0;i<9;i++ ) {
-                    if ( arr[i] === 0 ) return i;
-                }
-                return -1;
-            }
-        }
-    };
-
-    var func = eightNums();
-    $scope.event.random();
-    $scope.event.solve();
-
-    angular.element(document).on('keydown',$scope.event.keyControl);
-
-}]);
+init();
+animate();
 
 
-function eightNums() {
+function init() {
 
-    var MAXN = 388211;
-    var d = [[0,4,0,2],[0,5,1,3],[0,6,2,0],[1,7,0,5],[2,8,4,6],[3,9,5,0],[4,0,0,8],[5,0,7,9],[6,0,8,0]];
-    var st = [];
-    var target = {sta:0,pos:0,step:0,visit:0};
-    var source = {sta:0,pos:0,step:0,visit:0};
-    var beginT, endT;
-    var defaultSource = [2,1,7,6,3,4,5,8,0];
-    var defaultTarget = [1,2,3,4,5,6,7,8,0];
+    container = document.createElement( 'div' );
+    document.body.appendChild( container );
 
-    return {
-        setRandom: randomSource,
-        getPath: produce,
-        remap: remap,
-        hasSolution: hasSolution,
-        getSourceArr: getArr('s'),
-        getTargetArr: getArr('t'),
-    };
+    info = document.createElement( 'div' );
+    info.style.position = 'absolute';
+    info.style.top = '10px';
+    info.style.width = '100%';
+    info.style.textAlign = 'center';
 
-    function getArr(type) {
-        return function () {
-            switch (type) {
-                case 's': return defaultSource;
-                case 't': return defaultTarget;
-                default: return [1,2,3,4,5,6,7,8,0];
-            }
-        };
-    }
+    container.appendChild( info );
 
-    function hasSolution(arS, arT) {
-        arS = arS || defaultSource;
-        arT = arT || defaultTarget;
-        return sigma(arS)%2 === sigma(arT)%2;
-    }
+    camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 1000 );
+    camera.position.z = 150;
+    camera.position.set(-74,71,108);
+    //水平视角camera.position.set(-148.85752071033144,0,-4.720488068786309);
+    controls = new THREE.OrbitControls( camera );
 
-    function remap(arr) {
-        var ret = [];
-        for( var i=0;i<9;i++ ) {
-            ret[arr[i]] = i;
-        }
-        return ret;
-    }
+    scene = new THREE.Scene();
 
-    function init() {
-        st = [];
-        target = {sta:0,pos:0,step:0,visit:0};
-        source = {sta:0,pos:0,step:0,visit:0};
-    }
+    var light = new THREE.PointLight( 0xffffff, 1.5 );
+    light.position.set( 1000, 1000, 2000 );
+    scene.add( light );
+    
 
-    function randomSource() {
-        var init = defaultSource;
-        for( var i=0;i<8;i++ ) {
-            var rnd = random(i,9);
-            var temp = init[rnd];
-            init[rnd] = init[i];
-            init[i] = temp;
-        }
+    renderer = new THREE.WebGLRenderer( { antialias: true } ); // WebGLRenderer CanvasRenderer
+    renderer.setClearColor( 0xf0f0f0 );
+    renderer.setSize( window.innerWidth, window.innerHeight );
 
-        return init;
-    }
+    renderer.domElement.id = "threejsCanvas";
+    container.appendChild( renderer.domElement );
 
-    function random(m, n) {
-        return parseInt(Math.random()*(n-m)+m);
-    }
-    function sigma(arr) {
-        var ret = 0;
-        for ( var i=1;i<=8;i++ )
-            ret += p(arr, i);
-        return ret;
+    window.addEventListener( 'resize', onWindowResize, false );
+    bindClick();
+}
 
-        function p(arr, x) {
-            var ret = 0;
-            for ( var i=0;i<9;i++ ) {
-                if ( arr[i] && arr[i] < x )
-                    ret ++;
-                else if ( arr[i] === x )
-                    break;
-            }
-            return ret;
-        }
-    }
-    function convert(arr, state) {
-        //state 引用传值
-        state.sta = 0;
-        for ( var i = 0; i < 9; i ++ ) {
-            if ( arr[i] !== 0 ) {
-                state.sta |= ((arr[i]-1)<<(24-i*3));
-            }
-            else {
-                state.pos = i;
-                state.sta |= (arr[i]<<(24-i*3));
-            }
-        }
+function bindClick() {
 
-        return 1;
-    }
+    //桌面配置函数
+    var product = {
+        formGeneral: function (W, r, R, H) {
+            var depth, A;
+            W = W || 106.88;
+            r = r || 0.357;
+            R = R || 40;
+            depth = 3;
+            H = (H || 70)-depth;
+            A = Math.sqrt(R*R-(R-1.25)*(R-1.25));
 
-    function reconvert(state, arr) {
-        for (var i = 0; i< 9; i++) {
-            if (state.pos != i) {
-                arr[i] = (state.sta>>(24-i*3) ) & 7;
-                arr[i] ++;
-            }
-            else {
-                arr[i]=0;
-            }
-        }
-    }
-
-    function exchange(state, pos) {
-        //state 复制传值
-        var temp = 7<<((9-pos)*3);
-        var s = {sta:0,pos:0,step:0,visit:0};
-        s.sta = state.sta;
-        temp = temp & state.sta;
-        temp = ((temp>>((9-pos)*3))<<((9-state.pos-1)*3));
-        s.sta |= temp;
-        s.sta &= ~(7<<((9-pos)*3));
-        s.pos = pos-1;
-        return s;
-    }
-
-    function search(state) {
-        var index = state.sta % MAXN;
-        var flag = true;
-        while ( flag ) {
-            if ( ! st[index] ) {
-                st[index] = st[index] || {sta:0,pos:0,step:0,visit:0};
-                st[index].sta = state.sta;
-                st[index].pos = state.pos;
-                flag = false;
-            }
-            else if (!(st[index].sta^state.sta)&&!(st[index].pos^state.pos)) {
-                flag = false;
-            }
-            else {
-                index = (index+1) % MAXN;
-            }
-        }
-        return index;
-    }
-
-    function produce(sou, tar) {
-        init();
-        var i = 0;
-        var q = [];
-        var index;
-        var count = 0;
-        var steps = -1;
-        var isSolve = false;
-        var sourceDest ;
-        var targetDest ;
-        var paths = [];
-
-
-        tar = tar || defaultTarget;
-        sou = sou || defaultSource;
-        defaultTarget = tar;
-        defaultSource = sou;
-
-        convert(tar, target);
-        convert(sou, source);
-
-        beginT = (new Date()).getTime();
-
-        i = search(source);
-        q.push(i);
-
-        i = search(target);
-        q.push(i);
-
-        st[i] = st[i] || {sta:0,pos:0,step:0,visit:0};
-        st[i].visit = 1;
-        st[i].step  = 1;
-
-        if (sigma(sou)%2 !== sigma(tar)%2) {
-            return {solve: false};
-        }
-
-
-        if(!(source.sta^target.sta)&&!(source.pos^target.pos)) {
-            while(q.length)q.pop();
-            return {changePath: [tar], stepNum: 0, solve: true};
-        }
-
-        while ( q.length && ! isSolve ) {
-            count ++;
-            index = q[0];
-            for ( var j = 0; j < 4; j++ ) {
-                if( d[st[index].pos][j] ) {
-                    var flag = search(exchange(st[index],d[st[index].pos][j]));
-                    if ( !st[flag].step ) {
-                        st[flag].step = st[index].step + 1;
-                        st[flag].visit = st[index].visit;
-                        q.push(flag);
-                        paths[flag] = index;
+            calcDetail(function (detail, A) {
+                for(var i=0;i<R/2.5*2;i++)
+                {
+                    var w;
+                    if( i<R/2.5) {
+                        w = 2*Math.sqrt(R*R-(R-i*2.5-1.25)*(R-i*2.5-1.25));
                     }
                     else {
-                        if(st[flag].visit !== st[index].visit)
-                        {
-                            sourceDest = flag;
-                            targetDest = index;
-
-                            isSolve = true;
-                            steps = (st[index].step + st[flag].step);
-                        }
+                        w = 2*Math.sqrt(-(R-(i+1)*2.5+1.25)*(R-(i+1)*2.5+1.25)+R*R);
                     }
+
+                    detail.push({
+                        sX: w,
+                        sY: depth,
+                        sZ: 2.5,
+                        pX: 0,
+                        pY: 0,
+                        pZ: -R+2.5*i,
+                        len: W-w/2,
+                        coreX: w/2-A,
+                        extra: 0
+                    });
                 }
-            }
+                return coreTransform(W,H,R,r,depth);
+            }, A,W,H,R,r,depth);
+        },
+        formRhombus: function () {
+            var A = 2;
+            var W = 83.76,
+                depth = 3,
+                H = 73-depth,
+                R = 40,
+                r = 0.566;
+            calcDetail(function (detail, A) {
+                for(var i=0;i<R/2*2;i++)
+                {
+                    var w;
+                    if( i<R/2) {
+                        w = 2*((i+1)*2);
+                    }
+                    else {
+                        w = 2*(2*R-i*2);
+                    }
 
-            q.shift();
+                    detail.push({
+                        sX: w ,
+                        sY: depth,
+                        sZ: 2,
+                        pX: 0,
+                        pY: 0,
+                        pZ: -R+2*i,
+                        len: W-w/2,
+                        coreX: w/2-A,
+                        extra: 0
+                    });
+                }
+                return coreTransform(W,H,R,r,depth);
+            }, A,W,H,R,r,depth);
+        },
+        formRhombusRound: function () {
+            var A = 2.5;
+            var W = 58.2,
+                depth = 3,
+                H = 53-depth,
+                R = 25,
+                r = 0.511;
+            calcDetail(function (detail, A) {
+                for(var i=0;i<20;i++)
+                {
+                    var w;
+                    var wAdd;
+                    if (i==0 || i==19) {
+                        w = 2*A;
+                        wAdd =0;
+                    }
+                    else if( i<=9) {
+                        w = 2*((i+1)*2.5);
+                    }
+                    else {
+                        w = 2*(50-i*2.5);
+                    }
+
+                    switch( parseInt(i/10) ? (19-i) : i){
+                        case 0: wAdd = 0;break;
+                        case 1: wAdd = 3.25;break;
+                        case 2: wAdd = 5.5;break;
+                        case 3: wAdd = 7;break;
+                        case 4: wAdd = 8;break;
+                        case 5: wAdd = 7.75;break;
+                        case 6: wAdd = 6.75;break;
+                        case 7: wAdd = 4.5;break;
+                        case 8: wAdd = 2.5;break;
+                        case 9: wAdd = 0;break;
+                    }
+
+                    detail.push({
+                        sX: w ,
+                        sY: depth,
+                        sZ: 2.5,
+                        pX: 0,
+                        pY: 0,
+                        pZ: -25+2.5*i,
+                        len: W-w/2,
+                        coreX: w/2-A,
+                        extra: -wAdd
+                    });
+                }
+                return coreTransform(W,50,25,r,depth);
+            }, A,W,H,R,r,depth);
+        }, 
+        formEllipse: function () {
+            
+            var W = 111.36,
+                depth = 3,
+                H = 83-depth,
+                R = 80/2,
+                r = 0.579;
+            var A = 1.5*Math.sqrt(R*R-(R-1.25)*(R-1.25));
+            var ellipseRadio = 1.5;
+            calcDetail(function (detail, A) {
+                for(var i=0;i<R/2.5*2;i++)
+                {
+                    var w;
+                    if (i==0 || i==R/2.5*2-1) {
+                        w = 2*A;
+                    }
+                    else if( i<R/2.5) {
+                        w = 2*Math.sqrt(R*R-(R-i*2.5)*(R-i*2.5));
+                        //w = 2*((i+1)*2.5);
+                    }
+                    else {
+                        w = 2*Math.sqrt(-(R-(i+1)*2.5)*(R-(i+1)*2.5)+R*R);
+                        //w = 2*(50-i*2.5);
+                    }
+                    w *= ellipseRadio;
+                    detail.push({
+                        sX: w,
+                        sY: depth,
+                        sZ: 2.5,
+                        pX: 0,
+                        pY: 0,
+                        pZ: -R+2.5*i,
+                        len: W-w/2,
+                        coreX: w/2-A,
+                        extra: 0
+                    });
+                }
+                return coreTransform(W,H,R,r,depth);
+            }, A,W,H,R,r,depth);
         }
-        while(q.length)q.pop();
-        endT = (new Date()).getTime();
+    };
 
-        if(!isSolve) return {solve: false, time: endT-beginT, stateNum: count};
+    $('.product').on('click', function () {
+        var _self = this;
+        var W = getData(_self, 'w'),
+            r = getData(_self, 'r'),
+            R = getData(_self, 'rr'),
+            H = getData(_self, 'h');
+        product['formGeneral'] && product['formGeneral'](W,r,R,H);
+        console.log(W,r,R,H);
+        function getData(self, attr) { return -(-($(self).data(attr))) }
+    });
+    $('.newProduct').on('click', function () {
+        var role = $(this).data('role');
+        product[role] && product[role]();
+    });
+}
 
-        var changePath = [];
-        stepTraverse(sourceDest, paths, changePath, true);
-        stepTraverse(targetDest, paths, changePath, false);
-        var tempState = {};
-        convert(changePath[0], tempState);
+function createGeometry(sX,sY,sZ,pX,pY,pZ,color,cylinder) {
 
-        if(tempState.sta === target.sta) changePath = changePath.reverse();
-
-        return {time: endT-beginT, stateNum: count, stepNum: steps, solve: true, path: changePath};
-
-        function stepTraverse(s, p, c, b) {
-            var t = s;
-            var flag = false;
-            while(1) {
-                var arr = [];
-                reconvert(st[t], arr);
-                b ? c.unshift(arr) : c.push(arr);
-                t = p[t];
-                if(!t || flag)break;
-                flag = source.sta === st[t].sta;
-            }
-        }
-
+    var g = new THREE.Object3D();
+    var mesh1 = null;
+    var mesh2 = null;
+    color = color || 0x844d26;
+    if (cylinder) {
+        mesh1 = new THREE.Mesh( new THREE.CylinderGeometry(sY,sY,sZ,32), new THREE.MeshBasicMaterial( { color: color, wireframe: false} ));
+        mesh1.rotation.set(PI/2,0,0);
+    }
+    else {
+        mesh1 = new THREE.Mesh( new THREE.BoxGeometry(sX,sY,sZ), new THREE.MeshBasicMaterial( { color: color, wireframe: false} ));
+        mesh2 = new THREE.Mesh( new THREE.BoxGeometry(sX,sY,sZ),new THREE.MeshBasicMaterial( { color: 0x000, wireframe: true} ) );
     }
 
+    mesh1 && mesh1.position.set(pX,pY,pZ);
+    mesh2 && mesh2.position.set(pX,pY,pZ);
 
+    mesh1 && g.add(mesh1);
+    mesh2 && g.add(mesh2);
+
+    return g;
+}
+
+
+//木条位置计算 和 动画计算
+function calcDetail(getW, A,W,H,R,r,depth) {
+    while ( window.group.length ) {
+        scene.remove(group[0]);
+        group.shift();
+    }
+    var detail = [];
+    A = A || 5;
+    var core = getW(detail, A,r);
+
+    //创建 圆形桌面 group
+    var desktopGroup = new THREE.Object3D();
+    for(var i=0;i<detail.length;i++) {
+        var d = detail[i];
+        desktopGroup.add( createGeometry(d.sX,d.sY,d.sZ,d.pX,d.pY,d.pZ,0x9D5E32) );
+    }
+    scene.add(desktopGroup);
+
+    //创建 长条
+    var dynamicGroup_1 = new THREE.Object3D();
+    for(var i=0;i<detail.length;i++) {
+        var d = detail[i];
+        if ( i==0 ) {
+            var g = new THREE.Object3D();
+            g.add(  createGeometry(d.len+d.extra,d.sY,d.sZ,-W+d.len/2-d.extra/2,d.pY,d.pZ)  );
+            g.add(  createGeometry(0.55,0.55,2*R+2,-(W-(d.len+d.extra)*(1-r)),d.pY,-1.25,0xbbbbbb,true)  );
+            dynamicGroup_1.add(g);
+        }
+        else
+            dynamicGroup_1.add( createGeometry(d.len+d.extra,d.sY,d.sZ,-W+d.len/2-d.extra/2,d.pY,d.pZ) );
+    }
+    scene.add(dynamicGroup_1);
+
+    var dynamicGroup_2 = new THREE.Object3D();
+    for(var i=0;i<detail.length;i++) {
+        var d = detail[i];
+        if ( i==0 ) {
+            var g2 = new THREE.Object3D();
+            g2.add(  createGeometry(d.len+d.extra,d.sY,d.sZ,W-d.len/2+d.extra/2,d.pY,d.pZ)  );
+            g2.add(  createGeometry(0.55,0.55,2*R+2,(W-(d.len+d.extra)*(1-r)),d.pY,-1.25,0xbbbbbb,true)  );
+            dynamicGroup_2.add(g2);
+        }
+        else
+            dynamicGroup_2.add( createGeometry(d.len+d.extra,d.sY,d.sZ,W-d.len/2+d.extra/2,d.pY,d.pZ) );
+    }
+    scene.add(dynamicGroup_2);
+
+    group.push(desktopGroup);
+    group.push(dynamicGroup_1);
+    group.push(dynamicGroup_2);
+
+    var degree = 0;
+    var async = false;
+    var rotateHandler = function (reset, degInterval) {
+        if ( Math.sin((degree+degInterval)/180*PI)>H/(W-A) && degInterval>0 ) {
+            async = false;
+            return;
+        }
+
+        if (degree <  1*Math.abs(degInterval) && degInterval<0) {
+            reset = true;
+            degree = -degInterval;//0.000000001;
+        }
+
+        async = true;
+        degree += degInterval;
+        var objs = dynamicGroup_1.children;
+        for(var i=0;i<objs.length;i++) {
+            var o = objs[i];
+            var d = detail[i];
+
+            var deg = core.beta(PI/2/90*degree, d.coreX, A);
+            if(false && degree>45)deg += Math.atan(d.sY/core.L1(PI/2/90*degree, d.coreX, A)/2);
+            o.rotation.set(0,0,deg);
+            o.position.set((d.sX)*(Math.cos(deg)-1)/2-d.sY/2*Math.sin(deg),(d.sX)*Math.sin(deg)/2-d.sY/2*(1-Math.cos(deg)),0);
+        }
+
+        var objs = dynamicGroup_2.children;
+        for(var i=0;i<objs.length;i++) {
+            var o = objs[i];
+            var d = detail[i];
+
+            var deg = core.beta(PI/2/90*degree, d.coreX, A);
+            if(false && degree>45)deg += Math.atan(d.sY/core.L1(PI/2/90*degree, d.coreX, A)/2);
+            o.rotation.set(0,0,-deg);
+            o.position.set(-(d.sX)*(Math.cos(-deg)-1)/2+d.sY/2*Math.sin(deg),-(d.sX)*Math.sin(-deg)/2-d.sY/2*(1-Math.cos(-deg)),0);
+        }
+
+
+        render();
+
+
+/*                  //输出特定角度 参数
+        var aaaaa = Math.asin(H/(W-A))/PI*180;
+
+        consoleInfo(aaaaa*1/4);
+        consoleInfo(aaaaa*2/4);
+        consoleInfo(aaaaa*3/4);
+        consoleInfo(aaaaa*4/4);
+
+        function consoleInfo(degr) {
+            if ( Math.abs(degree-degr)<Math.abs(degInterval)/2 ) {
+                for (var i=0;i<objs.length;i++) {
+                    var o = objs[i];
+                    var d = detail[i];
+                    console.log(i,degr,d.pZ,core.retX(PI/2/90*degr, d.coreX, A),core.retY(PI/2/90*degr, d.coreX, A));
+                }
+            }
+        }*/
+
+        //输出最终情况下 加工尺寸
+        /*var aaaaa = Math.asin(H/(W-A))/PI*180;
+        slotInfo(aaaaa*4/4);
+
+        function slotInfo(degr) {
+            if ( Math.abs(degree-degr)<Math.abs(degInterval) ) {
+                for (var i=0;i<objs.length;i++) {
+                    var o = objs[i];
+                    var d = detail[i];
+                    console.log(i,degr,(W-A)*r+A-d.sX/2,core.L1(PI/2/90*degr, d.coreX, A),core.L1(PI/2/90*degr, d.coreX, A)-((W-A)*r+A-d.sX/2),d.len);
+                }
+            }
+        }*/
+
+        if(reset) {
+            async = false;
+            return;
+        }
+        setTimeout( function(){rotateHandler(reset,degInterval)},17 );
+    };
+
+
+    render();
+
+
+    $('.event').off('click').on('click', function () {
+        var role = $(this).data('role');
+        if ( async ) return;
+        switch(role) {
+            case 'animate':
+                setTimeout( function(){rotateHandler(false,0.5)},17 );
+                break;
+            case 'reset':
+                setTimeout( function(){rotateHandler(false,-0.5)},17 );
+                break;
+            case 'plus':
+                setTimeout( function(){rotateHandler(true,0.5)},17 );
+                break;
+            case 'minus':
+                setTimeout( function(){rotateHandler(true,-0.5)},17 );
+                break;
+            case 'plus8':
+                setTimeout( function(){rotateHandler(true,Math.asin(H/(W-A))/PI*180/8)},17 );
+                break;
+            case 'minus8':
+                setTimeout( function(){rotateHandler(true,-Math.asin(H/(W-A))/PI*180/8)},17 );
+                break;
+            default:break;
+        }
+
+    });
+
+}
+
+function coreTransform(W,H,R,r) {
+    //变量 alpha, x, A
+    var ret = {
+        beta: function (alpha, x, A) {
+            var s = ret.sinBeta(alpha,x,A);
+            var c = ret.cosBeta(alpha,x,A);
+            if(s>=0 && c>=0)
+                return PI-Math.asin( ret.sinBeta(alpha,x,A) );
+            else if(s>=0)
+                return Math.asin( ret.sinBeta(alpha,x,A) );
+            else if(s<=0 && c>=0)
+                return PI-Math.asin( ret.sinBeta(alpha,x,A) );
+            else if(s<=0)
+                return Math.asin( ret.sinBeta(alpha,x,A) );
+        },
+        sinBeta: function (alpha, x, A) {
+            var W_A = W - A;
+            return (W_A)*sin(alpha)*r/ret.L1(alpha, x, A);
+        },
+        cosBeta: function (alpha, x, A) {
+            var W_A = W - A;
+            return (x-W_A*r*cos(alpha))/ret.L1(alpha, x, A);
+        },
+        L1: function (alpha, x, A) {
+            var W_A = W - A;
+            return Math.sqrt(x*x+W_A*W_A*r*r-2*x*W_A*r*cos(alpha));
+        },
+        retX: function (alpha, x, A) {
+            var W_A = W - A;
+            //console.log('  ', W_A*cos(alpha),x,(W_A-x)*ret.cosBeta(alpha, x, A))
+            return W_A*cos(alpha)-x+(W_A-x)*ret.cosBeta(alpha, x, A);
+        },
+        retY: function (alpha, x, A) {
+            var W_A = W - A;
+            return W_A*sin(alpha)-(W_A-x)*ret.sinBeta(alpha, x, A);
+        }
+    };
+    return ret;
+    function sin(t) { return Math.sin(t);}
+    function cos(t) { return Math.cos(t);}
+}
+
+function onWindowResize() {
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize( window.innerWidth, window.innerHeight );
+
+}
+
+//
+
+function animate() {
+
+    requestAnimationFrame( animate );
+
+    controls.update();
+
+    render();
+/*  stats.update();
+*/
+}
+
+function render() {
+
+    renderer.render( scene, camera );
 
 }
