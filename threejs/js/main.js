@@ -1,1 +1,491 @@
-var container,stats;var camera,controls,scene,renderer;var cube,plane;var group=[];var PI=Math.acos(-1);init();animate();function init(){container=document.createElement("div");document.body.appendChild(container);info=document.createElement("div");info.style.position="absolute";info.style.top="10px";info.style.width="100%";info.style.textAlign="center";container.appendChild(info);camera=new THREE.PerspectiveCamera(50,window.innerWidth/window.innerHeight,1,1000);camera.position.z=150;camera.position.set(-74,71,108);controls=new THREE.OrbitControls(camera);scene=new THREE.Scene();var a=new THREE.PointLight(16777215,1.5);a.position.set(1000,1000,2000);scene.add(a);renderer=new THREE.WebGLRenderer({antialias:true});renderer.setClearColor(15790320);renderer.setSize(window.innerWidth,window.innerHeight);renderer.domElement.id="threejsCanvas";container.appendChild(renderer.domElement);window.addEventListener("resize",onWindowResize,false);bindClick()}function bindClick(){$("#formRound2").on("click",function(){var c=Math.sqrt(25*25-23.75*23.75);var b=60,g=3,d=53-g,e=25,f=1/2;calcDetail(function(l,h){for(var k=0;k<20;k++){var j;if(k<=9){j=2*Math.sqrt(25*25-(25-k*2.5-1.25)*(25-k*2.5-1.25))}else{j=2*Math.sqrt(-(25-(k+1)*2.5+1.25)*(25-(k+1)*2.5+1.25)+25*25)}l.push({sX:j,sY:g,sZ:2.5,pX:0,pY:0,pZ:-e+2.5*k,len:b-j/2,coreX:j/2-h,extra:0})}return coreTransform(b,d,e,f,g)},c,b,d,e,f,g)});$("#formRound_1").on("click",function(){a(79.44,0.433)});$("#formRound_2-5").on("click",function(){a(81.6,0.518)});$("#formRound_3").on("click",function(){a(87.44,0.66)});function a(c,f){var b=Math.sqrt(40*40-38.75*38.75);c=c||106.88;f=f||0.357;var g=3,d=70-g,e=40;calcDetail(function(l,h){for(var k=0;k<e/2.5*2;k++){var j;if(k<e/2.5){j=2*Math.sqrt(e*e-(e-k*2.5-1.25)*(e-k*2.5-1.25))}else{j=2*Math.sqrt(-(e-(k+1)*2.5+1.25)*(e-(k+1)*2.5+1.25)+e*e)}l.push({sX:j,sY:g,sZ:2.5,pX:0,pY:0,pZ:-e+2.5*k,len:c-j/2,coreX:j/2-h,extra:0})}return coreTransform(c,d,e,f,g)},b,c,d,e,f,g)}$("#formRhombus").on("click",function(){var c=2;var b=83.76,g=3,d=73-g,e=40,f=0.566;calcDetail(function(l,h){for(var k=0;k<e/2*2;k++){var j;if(k<e/2){j=2*((k+1)*2)}else{j=2*(2*e-k*2)}l.push({sX:j,sY:g,sZ:2,pX:0,pY:0,pZ:-e+2*k,len:b-j/2,coreX:j/2-h,extra:0})}return coreTransform(b,d,e,f,g)},c,b,d,e,f,g)});$("#formRhombusRound").on("click",function(){var c=2.5;var b=58.2,g=3,d=53-g,e=25,f=0.511;calcDetail(function(l,h){for(var k=0;k<20;k++){var j;var m;if(k==0||k==19){j=2*h;m=0}else{if(k<=9){j=2*((k+1)*2.5)}else{j=2*(50-k*2.5)}}switch(parseInt(k/10)?(19-k):k){case 0:m=0;break;case 1:m=3.25;break;case 2:m=5.5;break;case 3:m=7;break;case 4:m=8;break;case 5:m=7.75;break;case 6:m=6.75;break;case 7:m=4.5;break;case 8:m=2.5;break;case 9:m=0;break}l.push({sX:j,sY:g,sZ:2.5,pX:0,pY:0,pZ:-25+2.5*k,len:b-j/2,coreX:j/2-h,extra:-m})}return coreTransform(b,50,25,f,g)},c,b,d,e,f,g)});$("#formEllipse").on("click",function(){var c=111.36,h=3,d=83-h,e=80/2,g=0.579;var b=1.5*Math.sqrt(e*e-(e-1.25)*(e-1.25));var f=1.5;calcDetail(function(m,j){for(var l=0;l<e/2.5*2;l++){var k;if(l==0||l==e/2.5*2-1){k=2*j}else{if(l<e/2.5){k=2*Math.sqrt(e*e-(e-l*2.5)*(e-l*2.5))}else{k=2*Math.sqrt(-(e-(l+1)*2.5)*(e-(l+1)*2.5)+e*e)}}k*=f;m.push({sX:k,sY:h,sZ:2.5,pX:0,pY:0,pZ:-e+2.5*l,len:c-k/2,coreX:k/2-j,extra:0})}return coreTransform(c,d,e,g,h)},b,c,d,e,g,h)})}function createGeometry(d,b,a,f,e,c,h,j){var i=new THREE.Object3D();var l=null;var k=null;h=h||8670502;if(j){l=new THREE.Mesh(new THREE.CylinderGeometry(b,b,a,32),new THREE.MeshBasicMaterial({color:h,wireframe:false}));l.rotation.set(PI/2,0,0)}else{l=new THREE.Mesh(new THREE.BoxGeometry(d,b,a),new THREE.MeshBasicMaterial({color:h,wireframe:false}));k=new THREE.Mesh(new THREE.BoxGeometry(d,b,a),new THREE.MeshBasicMaterial({color:0,wireframe:true}))}l&&l.position.set(f,e,c);k&&k.position.set(f,e,c);l&&i.add(l);k&&i.add(k);return i}function calcDetail(p,l,a,h,e,k,v){while(window.group.length){scene.remove(group[0]);group.shift()}var u=[];l=l||5;var o=p(u,l,k);var f=new THREE.Object3D();for(var m=0;m<u.length;m++){var s=u[m];f.add(createGeometry(s.sX,s.sY,s.sZ,s.pX,s.pY,s.pZ,10313266))}scene.add(f);var t=new THREE.Object3D();for(var m=0;m<u.length;m++){var s=u[m];if(m==0){var n=new THREE.Object3D();n.add(createGeometry(s.len+s.extra,s.sY,s.sZ,-a+s.len/2-s.extra/2,s.pY,s.pZ));n.add(createGeometry(0.55,0.55,2*e+2,-(a-(s.len+s.extra)*(1-k)),s.pY,-1.25,12303291,true));t.add(n)}else{t.add(createGeometry(s.len+s.extra,s.sY,s.sZ,-a+s.len/2-s.extra/2,s.pY,s.pZ))}}scene.add(t);var q=new THREE.Object3D();for(var m=0;m<u.length;m++){var s=u[m];if(m==0){var w=new THREE.Object3D();w.add(createGeometry(s.len+s.extra,s.sY,s.sZ,a-s.len/2+s.extra/2,s.pY,s.pZ));w.add(createGeometry(0.55,0.55,2*e+2,(a-(s.len+s.extra)*(1-k)),s.pY,-1.25,12303291,true));q.add(w)}else{q.add(createGeometry(s.len+s.extra,s.sY,s.sZ,a-s.len/2+s.extra/2,s.pY,s.pZ))}}scene.add(q);group.push(f);group.push(t);group.push(q);var b=0;var c=false;var j=function(B,D){if(Math.sin((b+D)/180*PI)>h/(a-l)&&D>0){c=false;return}if(b<1*Math.abs(D)&&D<0){B=true;b=-D}c=true;b+=D;var A=t.children;for(var y=0;y<A.length;y++){var r=A[y];var C=u[y];var g=o.beta(PI/2/90*b,C.coreX,l);if(false&&b>45){g+=Math.atan(C.sY/o.L1(PI/2/90*b,C.coreX,l)/2)}r.rotation.set(0,0,g);r.position.set((C.sX)*(Math.cos(g)-1)/2-C.sY/2*Math.sin(g),(C.sX)*Math.sin(g)/2-C.sY/2*(1-Math.cos(g)),0)}var A=q.children;for(var y=0;y<A.length;y++){var r=A[y];var C=u[y];var g=o.beta(PI/2/90*b,C.coreX,l);if(false&&b>45){g+=Math.atan(C.sY/o.L1(PI/2/90*b,C.coreX,l)/2)}r.rotation.set(0,0,-g);r.position.set(-(C.sX)*(Math.cos(-g)-1)/2+C.sY/2*Math.sin(g),-(C.sX)*Math.sin(-g)/2-C.sY/2*(1-Math.cos(-g)),0)}render();var x=Math.asin(h/(a-l))/PI*180;z(x*4/4);function z(E){if(Math.abs(b-E)<Math.abs(D)){for(var F=0;F<A.length;F++){var H=A[F];var G=u[F];console.log(F,E,(a-l)*k+l-G.sX/2,o.L1(PI/2/90*E,G.coreX,l),o.L1(PI/2/90*E,G.coreX,l)-((a-l)*k+l-G.sX/2),G.len)}}}if(B){c=false;return}setTimeout(function(){j(B,D)},17)};render();$("#actionAnimate").off("click").on("click",function(){if(c){return}setTimeout(function(){j(false,0.5)},17)});$("#actionReset").off("click").on("click",function(){if(c){return}setTimeout(function(){j(false,-0.5)},17)});$("#actionPlus").off("click").on("click",function(){if(c){return}setTimeout(function(){j(true,0.5)},17)});$("#actionMinus").off("click").on("click",function(){if(c){return}setTimeout(function(){j(true,-0.5)},17)});$("#actionPlusP").off("click").on("click",function(){if(c){return}setTimeout(function(){j(true,Math.asin(h/(a-l))/PI*180/8)},17)});$("#actionMinusP").off("click").on("click",function(){if(c){return}setTimeout(function(){j(true,-Math.asin(h/(a-l))/PI*180/8)},17)})}function coreTransform(a,d,e,f){var c={beta:function(k,i,h){var j=c.sinBeta(k,i,h);var l=c.cosBeta(k,i,h);if(j>=0&&l>=0){return PI-Math.asin(c.sinBeta(k,i,h))}else{if(j>=0){return Math.asin(c.sinBeta(k,i,h))}else{if(j<=0&&l>=0){return PI-Math.asin(c.sinBeta(k,i,h))}else{if(j<=0){return Math.asin(c.sinBeta(k,i,h))}}}}},sinBeta:function(k,i,h){var j=a-h;return(j)*b(k)*f/c.L1(k,i,h)},cosBeta:function(k,i,h){var j=a-h;return(i-j*f*g(k))/c.L1(k,i,h)},L1:function(k,i,h){var j=a-h;return Math.sqrt(i*i+j*j*f*f-2*i*j*f*g(k))},retX:function(k,i,h){var j=a-h;return j*g(k)-i+(j-i)*c.cosBeta(k,i,h)},retY:function(k,i,h){var j=a-h;return j*b(k)-(j-i)*c.sinBeta(k,i,h)}};return c;function b(h){return Math.sin(h)}function g(h){return Math.cos(h)}}function onWindowResize(){camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight)}function animate(){requestAnimationFrame(animate);controls.update();render()}function render(){renderer.render(scene,camera)};
+
+var container, stats;
+
+var camera, controls, scene, renderer;
+
+var cube, plane;
+
+var group = [];
+
+var PI = Math.acos(-1);
+
+init();
+animate();
+
+
+function init() {
+
+    container = document.createElement( 'div' );
+    document.body.appendChild( container );
+
+    info = document.createElement( 'div' );
+    info.style.position = 'absolute';
+    info.style.top = '10px';
+    info.style.width = '100%';
+    info.style.textAlign = 'center';
+
+    container.appendChild( info );
+
+    camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 1000 );
+    camera.position.z = 150;
+    camera.position.set(-74,71,108);
+    //水平视角camera.position.set(-148.85752071033144,0,-4.720488068786309);
+    controls = new THREE.OrbitControls( camera );
+
+    scene = new THREE.Scene();
+
+    var light = new THREE.PointLight( 0xffffff, 1.5 );
+    light.position.set( 1000, 1000, 2000 );
+    scene.add( light );
+    
+
+    renderer = new THREE.WebGLRenderer( { antialias: true } ); // WebGLRenderer CanvasRenderer
+    renderer.setClearColor( 0xf0f0f0 );
+    renderer.setSize( window.innerWidth, window.innerHeight );
+
+    renderer.domElement.id = "threejsCanvas";
+    container.appendChild( renderer.domElement );
+
+    window.addEventListener( 'resize', onWindowResize, false );
+    bindClick();
+}
+
+function bindClick() {
+
+    //桌面配置函数
+    var product = {
+        formGeneral: function (W, r, R, H) {
+            var depth, A;
+            W = W || 106.88;
+            r = r || 0.357;
+            R = R || 40;
+            depth = 3;
+            H = (H || 70)-depth;
+            A = Math.sqrt(R*R-(R-1.25)*(R-1.25));
+
+            calcDetail(function (detail, A) {
+                for(var i=0;i<R/2.5*2;i++)
+                {
+                    var w;
+                    if( i<R/2.5) {
+                        w = 2*Math.sqrt(R*R-(R-i*2.5-1.25)*(R-i*2.5-1.25));
+                    }
+                    else {
+                        w = 2*Math.sqrt(-(R-(i+1)*2.5+1.25)*(R-(i+1)*2.5+1.25)+R*R);
+                    }
+
+                    detail.push({
+                        sX: w,
+                        sY: depth,
+                        sZ: 2.5,
+                        pX: 0,
+                        pY: 0,
+                        pZ: -R+2.5*i,
+                        len: W-w/2,
+                        coreX: w/2-A,
+                        extra: 0
+                    });
+                }
+                return coreTransform(W,H,R,r,depth);
+            }, A,W,H,R,r,depth);
+        },
+        formRhombus: function () {
+            var A = 2;
+            var W = 83.76,
+                depth = 3,
+                H = 73-depth,
+                R = 40,
+                r = 0.566;
+            calcDetail(function (detail, A) {
+                for(var i=0;i<R/2*2;i++)
+                {
+                    var w;
+                    if( i<R/2) {
+                        w = 2*((i+1)*2);
+                    }
+                    else {
+                        w = 2*(2*R-i*2);
+                    }
+
+                    detail.push({
+                        sX: w ,
+                        sY: depth,
+                        sZ: 2,
+                        pX: 0,
+                        pY: 0,
+                        pZ: -R+2*i,
+                        len: W-w/2,
+                        coreX: w/2-A,
+                        extra: 0
+                    });
+                }
+                return coreTransform(W,H,R,r,depth);
+            }, A,W,H,R,r,depth);
+        },
+        formRhombusRound: function () {
+            var A = 2.5;
+            var W = 58.2,
+                depth = 3,
+                H = 53-depth,
+                R = 25,
+                r = 0.511;
+            calcDetail(function (detail, A) {
+                for(var i=0;i<20;i++)
+                {
+                    var w;
+                    var wAdd;
+                    if (i==0 || i==19) {
+                        w = 2*A;
+                        wAdd =0;
+                    }
+                    else if( i<=9) {
+                        w = 2*((i+1)*2.5);
+                    }
+                    else {
+                        w = 2*(50-i*2.5);
+                    }
+
+                    switch( parseInt(i/10) ? (19-i) : i){
+                        case 0: wAdd = 0;break;
+                        case 1: wAdd = 3.25;break;
+                        case 2: wAdd = 5.5;break;
+                        case 3: wAdd = 7;break;
+                        case 4: wAdd = 8;break;
+                        case 5: wAdd = 7.75;break;
+                        case 6: wAdd = 6.75;break;
+                        case 7: wAdd = 4.5;break;
+                        case 8: wAdd = 2.5;break;
+                        case 9: wAdd = 0;break;
+                    }
+
+                    detail.push({
+                        sX: w ,
+                        sY: depth,
+                        sZ: 2.5,
+                        pX: 0,
+                        pY: 0,
+                        pZ: -25+2.5*i,
+                        len: W-w/2,
+                        coreX: w/2-A,
+                        extra: -wAdd
+                    });
+                }
+                return coreTransform(W,50,25,r,depth);
+            }, A,W,H,R,r,depth);
+        }, 
+        formEllipse: function () {
+            
+            var W = 111.36,
+                depth = 3,
+                H = 83-depth,
+                R = 80/2,
+                r = 0.579;
+            var A = 1.5*Math.sqrt(R*R-(R-1.25)*(R-1.25));
+            var ellipseRadio = 1.5;
+            calcDetail(function (detail, A) {
+                for(var i=0;i<R/2.5*2;i++)
+                {
+                    var w;
+                    if (i==0 || i==R/2.5*2-1) {
+                        w = 2*A;
+                    }
+                    else if( i<R/2.5) {
+                        w = 2*Math.sqrt(R*R-(R-i*2.5)*(R-i*2.5));
+                        //w = 2*((i+1)*2.5);
+                    }
+                    else {
+                        w = 2*Math.sqrt(-(R-(i+1)*2.5)*(R-(i+1)*2.5)+R*R);
+                        //w = 2*(50-i*2.5);
+                    }
+                    w *= ellipseRadio;
+                    detail.push({
+                        sX: w,
+                        sY: depth,
+                        sZ: 2.5,
+                        pX: 0,
+                        pY: 0,
+                        pZ: -R+2.5*i,
+                        len: W-w/2,
+                        coreX: w/2-A,
+                        extra: 0
+                    });
+                }
+                return coreTransform(W,H,R,r,depth);
+            }, A,W,H,R,r,depth);
+        }
+    };
+
+    $('.product').on('click', function () {
+        var _self = this;
+        var W = getData(_self, 'w'),
+            r = getData(_self, 'r'),
+            R = getData(_self, 'rr'),
+            H = getData(_self, 'h');
+        product['formGeneral'] && product['formGeneral'](W,r,R,H);
+        console.log(W,r,R,H);
+        function getData(self, attr) { return -(-($(self).data(attr))) }
+    });
+    $('.newProduct').on('click', function () {
+        var role = $(this).data('role');
+        product[role] && product[role]();
+    });
+}
+
+function createGeometry(sX,sY,sZ,pX,pY,pZ,color,cylinder) {
+
+    var g = new THREE.Object3D();
+    var mesh1 = null;
+    var mesh2 = null;
+    color = color || 0x844d26;
+    if (cylinder) {
+        mesh1 = new THREE.Mesh( new THREE.CylinderGeometry(sY,sY,sZ,32), new THREE.MeshBasicMaterial( { color: color, wireframe: false} ));
+        mesh1.rotation.set(PI/2,0,0);
+    }
+    else {
+        mesh1 = new THREE.Mesh( new THREE.BoxGeometry(sX,sY,sZ), new THREE.MeshBasicMaterial( { color: color, wireframe: false} ));
+        mesh2 = new THREE.Mesh( new THREE.BoxGeometry(sX,sY,sZ),new THREE.MeshBasicMaterial( { color: 0x000, wireframe: true} ) );
+    }
+
+    mesh1 && mesh1.position.set(pX,pY,pZ);
+    mesh2 && mesh2.position.set(pX,pY,pZ);
+
+    mesh1 && g.add(mesh1);
+    mesh2 && g.add(mesh2);
+
+    return g;
+}
+
+
+//木条位置计算 和 动画计算
+function calcDetail(getW, A,W,H,R,r,depth) {
+    while ( window.group.length ) {
+        scene.remove(group[0]);
+        group.shift();
+    }
+    var detail = [];
+    A = A || 5;
+    var core = getW(detail, A,r);
+
+    //创建 圆形桌面 group
+    var desktopGroup = new THREE.Object3D();
+    for(var i=0;i<detail.length;i++) {
+        var d = detail[i];
+        desktopGroup.add( createGeometry(d.sX,d.sY,d.sZ,d.pX,d.pY,d.pZ,0x9D5E32) );
+    }
+    scene.add(desktopGroup);
+
+    //创建 长条
+    var dynamicGroup_1 = new THREE.Object3D();
+    for(var i=0;i<detail.length;i++) {
+        var d = detail[i];
+        if ( i==0 ) {
+            var g = new THREE.Object3D();
+            g.add(  createGeometry(d.len+d.extra,d.sY,d.sZ,-W+d.len/2-d.extra/2,d.pY,d.pZ)  );
+            g.add(  createGeometry(0.55,0.55,2*R+2,-(W-(d.len+d.extra)*(1-r)),d.pY,-1.25,0xbbbbbb,true)  );
+            dynamicGroup_1.add(g);
+        }
+        else
+            dynamicGroup_1.add( createGeometry(d.len+d.extra,d.sY,d.sZ,-W+d.len/2-d.extra/2,d.pY,d.pZ) );
+    }
+    scene.add(dynamicGroup_1);
+
+    var dynamicGroup_2 = new THREE.Object3D();
+    for(var i=0;i<detail.length;i++) {
+        var d = detail[i];
+        if ( i==0 ) {
+            var g2 = new THREE.Object3D();
+            g2.add(  createGeometry(d.len+d.extra,d.sY,d.sZ,W-d.len/2+d.extra/2,d.pY,d.pZ)  );
+            g2.add(  createGeometry(0.55,0.55,2*R+2,(W-(d.len+d.extra)*(1-r)),d.pY,-1.25,0xbbbbbb,true)  );
+            dynamicGroup_2.add(g2);
+        }
+        else
+            dynamicGroup_2.add( createGeometry(d.len+d.extra,d.sY,d.sZ,W-d.len/2+d.extra/2,d.pY,d.pZ) );
+    }
+    scene.add(dynamicGroup_2);
+
+    group.push(desktopGroup);
+    group.push(dynamicGroup_1);
+    group.push(dynamicGroup_2);
+
+    var degree = 0;
+    var async = false;
+    var rotateHandler = function (reset, degInterval) {
+        if ( Math.sin((degree+degInterval)/180*PI)>H/(W-A) && degInterval>0 ) {
+            async = false;
+            return;
+        }
+
+        if (degree <  1*Math.abs(degInterval) && degInterval<0) {
+            reset = true;
+            degree = -degInterval;//0.000000001;
+        }
+
+        async = true;
+        degree += degInterval;
+        var objs = dynamicGroup_1.children;
+        for(var i=0;i<objs.length;i++) {
+            var o = objs[i];
+            var d = detail[i];
+
+            var deg = core.beta(PI/2/90*degree, d.coreX, A);
+            if(false && degree>45)deg += Math.atan(d.sY/core.L1(PI/2/90*degree, d.coreX, A)/2);
+            o.rotation.set(0,0,deg);
+            o.position.set((d.sX)*(Math.cos(deg)-1)/2-d.sY/2*Math.sin(deg),(d.sX)*Math.sin(deg)/2-d.sY/2*(1-Math.cos(deg)),0);
+        }
+
+        var objs = dynamicGroup_2.children;
+        for(var i=0;i<objs.length;i++) {
+            var o = objs[i];
+            var d = detail[i];
+
+            var deg = core.beta(PI/2/90*degree, d.coreX, A);
+            if(false && degree>45)deg += Math.atan(d.sY/core.L1(PI/2/90*degree, d.coreX, A)/2);
+            o.rotation.set(0,0,-deg);
+            o.position.set(-(d.sX)*(Math.cos(-deg)-1)/2+d.sY/2*Math.sin(deg),-(d.sX)*Math.sin(-deg)/2-d.sY/2*(1-Math.cos(-deg)),0);
+        }
+
+
+        render();
+
+
+/*                  //输出特定角度 参数
+        var aaaaa = Math.asin(H/(W-A))/PI*180;
+
+        consoleInfo(aaaaa*1/4);
+        consoleInfo(aaaaa*2/4);
+        consoleInfo(aaaaa*3/4);
+        consoleInfo(aaaaa*4/4);
+
+        function consoleInfo(degr) {
+            if ( Math.abs(degree-degr)<Math.abs(degInterval)/2 ) {
+                for (var i=0;i<objs.length;i++) {
+                    var o = objs[i];
+                    var d = detail[i];
+                    console.log(i,degr,d.pZ,core.retX(PI/2/90*degr, d.coreX, A),core.retY(PI/2/90*degr, d.coreX, A));
+                }
+            }
+        }*/
+
+        //输出最终情况下 加工尺寸
+        /*var aaaaa = Math.asin(H/(W-A))/PI*180;
+        slotInfo(aaaaa*4/4);
+
+        function slotInfo(degr) {
+            if ( Math.abs(degree-degr)<Math.abs(degInterval) ) {
+                for (var i=0;i<objs.length;i++) {
+                    var o = objs[i];
+                    var d = detail[i];
+                    console.log(i,degr,(W-A)*r+A-d.sX/2,core.L1(PI/2/90*degr, d.coreX, A),core.L1(PI/2/90*degr, d.coreX, A)-((W-A)*r+A-d.sX/2),d.len);
+                }
+            }
+        }*/
+
+        if(reset) {
+            async = false;
+            return;
+        }
+        setTimeout( function(){rotateHandler(reset,degInterval)},17 );
+    };
+
+
+    render();
+
+
+    $('.event').off('click').on('click', function () {
+        var role = $(this).data('role');
+        if ( async ) return;
+        switch(role) {
+            case 'animate':
+                setTimeout( function(){rotateHandler(false,0.5)},17 );
+                break;
+            case 'reset':
+                setTimeout( function(){rotateHandler(false,-0.5)},17 );
+                break;
+            case 'plus':
+                setTimeout( function(){rotateHandler(true,0.5)},17 );
+                break;
+            case 'minus':
+                setTimeout( function(){rotateHandler(true,-0.5)},17 );
+                break;
+            case 'plus8':
+                setTimeout( function(){rotateHandler(true,Math.asin(H/(W-A))/PI*180/8)},17 );
+                break;
+            case 'minus8':
+                setTimeout( function(){rotateHandler(true,-Math.asin(H/(W-A))/PI*180/8)},17 );
+                break;
+            default:break;
+        }
+
+    });
+
+}
+
+function coreTransform(W,H,R,r) {
+    //变量 alpha, x, A
+    var ret = {
+        beta: function (alpha, x, A) {
+            var s = ret.sinBeta(alpha,x,A);
+            var c = ret.cosBeta(alpha,x,A);
+            if(s>=0 && c>=0)
+                return PI-Math.asin( ret.sinBeta(alpha,x,A) );
+            else if(s>=0)
+                return Math.asin( ret.sinBeta(alpha,x,A) );
+            else if(s<=0 && c>=0)
+                return PI-Math.asin( ret.sinBeta(alpha,x,A) );
+            else if(s<=0)
+                return Math.asin( ret.sinBeta(alpha,x,A) );
+        },
+        sinBeta: function (alpha, x, A) {
+            var W_A = W - A;
+            return (W_A)*sin(alpha)*r/ret.L1(alpha, x, A);
+        },
+        cosBeta: function (alpha, x, A) {
+            var W_A = W - A;
+            return (x-W_A*r*cos(alpha))/ret.L1(alpha, x, A);
+        },
+        L1: function (alpha, x, A) {
+            var W_A = W - A;
+            return Math.sqrt(x*x+W_A*W_A*r*r-2*x*W_A*r*cos(alpha));
+        },
+        retX: function (alpha, x, A) {
+            var W_A = W - A;
+            //console.log('  ', W_A*cos(alpha),x,(W_A-x)*ret.cosBeta(alpha, x, A))
+            return W_A*cos(alpha)-x+(W_A-x)*ret.cosBeta(alpha, x, A);
+        },
+        retY: function (alpha, x, A) {
+            var W_A = W - A;
+            return W_A*sin(alpha)-(W_A-x)*ret.sinBeta(alpha, x, A);
+        }
+    };
+    return ret;
+    function sin(t) { return Math.sin(t);}
+    function cos(t) { return Math.cos(t);}
+}
+
+function onWindowResize() {
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize( window.innerWidth, window.innerHeight );
+
+}
+
+//
+
+function animate() {
+
+    requestAnimationFrame( animate );
+
+    controls.update();
+
+    render();
+/*  stats.update();
+*/
+}
+
+function render() {
+
+    renderer.render( scene, camera );
+
+}
