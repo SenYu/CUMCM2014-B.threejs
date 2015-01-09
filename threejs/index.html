@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>three.js webgl - geometry - Subdivisions with Catmull-Clark</title>
+		<title>14数学建模国赛 - 模型</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<style>
@@ -11,8 +11,8 @@
 				margin: 0px;
 				overflow: hidden;
 			}
-			.button {
-				padding:7px 15px;border:solid 1px #000;
+			div.button {
+				padding:7px 15px;border:solid 1px #444;
 				border-radius:3px;
 				cursor: pointer;
 				background-color: #EEE;
@@ -30,14 +30,17 @@
 				box-shadow: 0 0 5px 1px rgba(0,0,0,0.2);
 				z-index: 99;
 			}
-			.button {
+			span.group {
+				border-radius:3px;display:inline-block;background:#DDD;padding:2px 6px;
+			}
+			div.button {
 				background-image: -webkit-linear-gradient(top, #FEFEFE, #EAEAEA);
 			}
 
-			.button:hover {
+			div.button:hover {
 				background-image: -webkit-linear-gradient(top, #F0F0F0, #D0D2D7);
 			}
-			.button:active {
+			div.button:active {
 				background-image: -webkit-linear-gradient(top, #D0D2D7, #F0F0F0);
 			}
 		</style>
@@ -45,32 +48,32 @@
 	<body>
 		<div class="operatorContainer">
 		<div style="margin-left:-30px;margin-bottom:10px;padding:0 30px;height:30px;line-height:30px;background:#FFDF24;font-size:18px;font-weight: bold;text-align:center">请务必使用 <a href="http://www.baidu.com/s?ie=UTF-8&wd=CHROME" target="_blank">Chrome</a> 浏览器浏览本页面, 使用IE/Firefox/Opera/Sarafi将无法看到动画</div>
-			<div id="actionAnimate" class="button">动画</div>
-			<div id="actionReset" class="button">复原</div>
-			<div id="actionPlus" class="button">+1 deg</div>
-			<div id="actionMinus" class="button">-1 deg</div>
-			<div id="actionPlusP" class="button">++1/8</div>
-			<div id="actionMinusP" class="button">--1/8</div>
-			<div id="formRound2" class="button">p1-中接-50</div>
-			<div id="formRound_1" class="button">p2-中接-67-w小</div>
-			<div id="formRound_2-5" class="button">p2-中接-67-优</div>
-			<div id="formRound_3" class="button">p2-中接-67-w大</div>
-			<div id="formRhombus" class="button">p3-菱形面</div>
-			<div id="formEllipse" class="button">p3-椭圆桌面</div>
-			<div id="formRhombusRound" class="button">p3-上轮廓菱形-下轮廓半圆形</div>
+			<div class="button event" data-role="animate">动画</div>
+			<div class="button event" data-role="reset">复原</div>
+			<div class="button event" data-role="plus">+1 deg</div>
+			<div class="button event" data-role="minus">-1 deg</div>
+			<div class="button event" data-role="plus8">++1/8</div>
+			<div class="button event" data-role="minus8">--1/8</div>
+			<div class="button product" data-w="60" data-r="0.5" data-rr="25" data-h="53">Problem1</div>
+			<span class="group">
+				<strong>Problem2</strong>
+				<div class="button product" data-w="79.44" data-r="0.433" data-rr="40" data-h="70">小</div>
+				<div class="button product" data-w="81.6" data-r="0.518" data-rr="40" data-h="70">优</div>
+				<div class="button product" data-w="87.44" data-r="0.66" data-rr="40" data-h="70">大</div>
+			</span>
+			<span class="group">
+				<strong>Problem3</strong>
+				<div class="button newProduct" data-role="formRhombus">菱形</div>
+				<div class="button newProduct" data-role="formEllipse">椭圆</div>
+				<div class="button newProduct" data-role="formRhombusRound">上菱形-下半圆</div>
+			</span>
 		</div>
 		<script src="js/three.min.js"></script>
 		<script src="js/OrbitControls.js"></script>
 		<script src="js/jquery/jquery-1.8.2.min.js"></script>
 		<script src="js/main.js"></script>
 		<script>
-		//自动圆形桌面
-			$(function(){
-				//$('#formRound').click();
-				$('#formRound2').click();
-				
-			});
+			$(function(){$('.product').eq(0).click();});
 		</script>
-
 	</body>
 </html>
